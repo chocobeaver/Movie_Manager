@@ -1,0 +1,71 @@
+﻿@model IEnumerable<MoviesDBManager.Models.User>
+@{
+    var currentUser = MoviesDBManager.Models.OnlineUsers.GetSessionUser();
+    if (currentUser != null && !currentUser.IsAdmin)
+    {
+        Response.Redirect((string)Session["LastAction"]);
+    }
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <fieldset>
+        <input type="button" id="SelectAll" value="Tous" style="float: left;" class="userBtn" />
+        <input type="button" id="DeSelectAll" value="Aucun" style="float: right;" class="userBtn" />
+
+        <fieldset class="userContainer">
+            @foreach (var item in Model)
+            {
+                string Name = $"{item.FirstName}  {item.LastName}";
+                <input type="checkbox" name="SelectedUsers" id="@item.Id" value="@item.Id" />
+                <label for="@item.Id" class="labelEmail"><img src="@item.Avatar" class="UserSmallAvatar" />@Name</label>
+                <br/>
+            }
+        </fieldset>
+    </fieldset>
+    <fieldset>
+        <h3 class="blueTitle">Couriel</h3>
+        <input type="text" placeholder="Sujet" class="form-control" id="subject" name="subject" />
+
+        <textarea class="form-control emailBody" id="body" name="body">Bonjour [Nom]</textarea>
+
+        <p class="smallText">[Nom] sera remplacé par une désignation suivi du nom de famille du destinataire</p>
+    </fieldset>
+
+    <input type="submit" value="Envoyer" />
+
+
+}
+@section Scripts {
+
+    <script defer>
+        function validateSelection() {
+            let oneSelected = false;
+            $("input[type='checkbox'][name='SelectedUsers']").each(function () {
+                if ($(this).prop('checked')) oneSelected = true;
+            });
+            if (!oneSelected)
+                $("#Error_SelectedUsers").css("display", "inline");
+            else
+                $("#Error_SelectedUsers").css("display", "none");
+            return oneSelected;
+        }
+        $("input[type='checkbox'][name='SelectedUsers']").change(function () { validateSelection(); });
+        $("form").submit(function () {
+            return validateSelection();
+        })
+        $("#SelectAll").click(function () {
+            $("input[type='checkbox'][name='SelectedUsers']").each(function () { $(this).prop('checked', true) });
+            validateSelection();
+            return false; // prevent form submit
+        })
+        $("#DeSelectAll").click(function () {
+            $("input[type='checkbox'][name='SelectedUsers']").each(function () { $(this).prop('checked', false) });
+            validateSelection();
+            return false; // prevent form submit
+        })
+    </script>
+}
+

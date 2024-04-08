@@ -1,0 +1,23 @@
+﻿@model IEnumerable<MoviesDBManager.Models.User>
+@{
+    ViewBag.Title = "UsersList";
+    bool writeAccess = (bool)MoviesDBManager.Models.OnlineUsers.Write_Access();
+    var currentUser = MoviesDBManager.Models.OnlineUsers.GetSessionUser();
+    if (currentUser != null && !currentUser.IsAdmin)
+    {
+        Response.Redirect((string)Session["LastAction"]);
+    }
+}
+<div class="prevent-select">
+    <h2>utilisateur</h2>
+    <hr />
+    <div class="main">
+        <div id="useContainer" class=" uContainer"> <!-- Refreshed periodically --> </div>
+    </div>
+</div>
+@section Scripts {
+    <script defer>
+        PartialRefresh.setTimeOutPage("@Url.Action("End","Session")");
+        let Users = new PartialRefresh("@Url.Action("Users", "Accounts")", "useContainer", 15);
+    </script>
+}

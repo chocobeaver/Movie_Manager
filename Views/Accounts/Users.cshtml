@@ -1,0 +1,79 @@
+﻿@model IEnumerable<MoviesDBManager.Models.User>
+@{
+    var currentUser = MoviesDBManager.Models.OnlineUsers.GetSessionUser();
+    if (currentUser != null && !currentUser.IsAdmin)
+    {
+        Response.Redirect((string)Session["LastAction"]);
+    }
+    if (currentUser == null || !currentUser.IsAdmin)
+    {
+        Response.Redirect("login");
+    }
+}
+@foreach (var item in Model)
+{
+    <div class="UserContainer">
+        <div>
+            <span>
+                @Helper.avatarLink(currentUser.Avatar, "/Accounts/Profil")
+            </span>
+            
+            <span style="color:dodgerblue">@item.GetFullName()</span>
+            <span>
+                @if (item.Blocked == true)
+                {
+                    <img src="~/Content/UI-Images/Masked.png" class="btn-online" alt="blocked" title="Bloque" />
+                }
+                else
+                {
+                    if (MoviesDBManager.Models.OnlineUsers.ConnectedUsersId.Contains(item.Id))
+                    {
+                        <img src="~/Content/UI-Images/OnLine.png" class="btn-online" alt="online" title="En_Ligne" />
+                    }
+                    else
+                    {
+                        <img src="~/Content/UI-Images/OffLine.png" class="btn-online" alt="offline" title="Hors_Ligne" />}
+                }
+            </span>
+            <span>
+
+                @if (item.UserTypeId == 3)
+                {
+                    <a href="promoteUser/@item.Id"><img src="~/Content/UI-Images/user.png" alt="user" class="UserSmallAvatar" title="Utilisateur" /></a>
+                }
+                else if (item.UserTypeId == 2)
+                {
+                    <a href="promoteUser/@item.Id"><img src="~/Content/UI-Images/power user.png" alt="poweruser" class="UserSmallAvatar" title="moderateur" /></a>
+                }
+                else if (item.UserTypeId == 1)
+                {
+                    <a href="promoteUser/@item.Id"><img src="~/Content/UI-Images/admin.png" alt="admin" class="UserSmallAvatar" title="Administrateur" /></a>
+                }
+            </span>
+            <span>
+                @if (item.Verified)
+                {
+                    <img src="~/Content/UI-Images/Accept.png" alt="verified" title=" Verifie" />
+                }
+                else
+                {
+                    <img src="~/Content/UI-Images/Abort.png" alt="not verified" title="pas verifier" />
+                }
+            </span>
+            @if (item.Blocked == true)
+            {
+                <input type="checkbox" checked title="Bloque" onclick="bootbox.confirm('Debloque @item.GetFullName()?', function (result) { if (result) { window.location = 'BlockUser/@item.Id'; } })" />
+            }
+            else
+            {
+                <input type="checkbox" title="Bloque" onclick="bootbox.confirm('Bloque @item.GetFullName()?', function(result){ if (result) window.location = 'BlockUser/@item.Id'; })" />
+            }
+
+
+            <i class="cmdIcon fa fa-times-circle" style="color:red;"
+               title="suprimer @item.GetFullName()"
+               onclick="bootbox.confirm('suprimer @item.GetFullName()?', function(result){ if (result) window.location = 'Delete/@item.Id'; })">
+            </i>
+        </div>
+    </div>
+}
